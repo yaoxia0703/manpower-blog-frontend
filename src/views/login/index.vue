@@ -36,12 +36,14 @@ import { loginApi } from '@/api/auth/auth'
 import { useRouter } from 'vue-router'
 import { ACCOUNT_TYPE } from '@/types/enums/account'
 import type { LoginRequest } from '@/types/auth/loginRequest'
+import { useUserStore } from '@/stores/user'
+
 
 // 路由
 const router = useRouter()
-// 表单
-
-
+// 用户状态管理
+const userStore = useUserStore()
+// 表单数据
 const form = reactive<LoginRequest>({
   accountType: ACCOUNT_TYPE.EMAIL, // 默认邮箱登录
   accountValue: '',
@@ -73,6 +75,12 @@ const handleLogin = async () => {
     if (result.data) {
       // 登录成功，处理用户信息
       console.log('登录成功:', result.data)
+      const data = result.data.data
+      userStore.setUser(data.user)
+      userStore.setToken(data.accessToken)
+      console.log('用户信息已保存到 Pinia:', userStore.user)
+      console.log('Token 已保存到 Pinia:', userStore.token)
+
       await router.push('/admin/dashboard')
     } else {
       // 登录失败，显示错误信息

@@ -2,6 +2,7 @@ import type { UserStatus } from '@/types/enums/user'
 import type { AccountStatus, AccountType, VerifiedStatus } from '@/types/enums/account'
 
 
+// 定义登录用户信息接口
 export interface LoginUser {
   userId: number
   accountId: number
@@ -13,7 +14,8 @@ export interface LoginUser {
   verified: VerifiedStatus
   
 }
-
-export interface AuthInfo {
-  token: string
+//
+export interface LoginResponse {
+  accessToken: string
+  user: LoginUser
 }
