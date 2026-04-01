@@ -8,12 +8,11 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user';
 
-const router = useRouter()
-
-const goLogin = () => {
-  router.push('/login')
+const userStore = useUserStore()
+const goLogin = async () => {
+  await userStore.logout()// 调用登出方法，清除用户信息和认证令牌
 }
 </script>
 
