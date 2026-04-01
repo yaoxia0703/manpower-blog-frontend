@@ -1,11 +1,27 @@
 import http from '@/api/common/http'
 import type { Result } from '@/types/common/result'
-import type { LoginResponse } from '@/types/auth/loginUser'
+import type { LoginResponse, LoginUser } from '@/types/auth/loginUser'
 import type { LoginRequest } from '@/types/auth/loginRequest'
 
 export function loginApi(loginRequest: LoginRequest) {
   return http.post<Result<LoginResponse>>(
     "/api/system/auth/login",
-    loginRequest
+    loginRequest,
+    { silent: true }
+  )
+}
+
+export function logoutApi() {
+  return http.post<Result<null>>(
+    "/api/system/auth/logout",
+    {},
+    { silent: true }
+  )
+}
+
+export function getMeApi() {
+  return http.get<Result<LoginUser>>(
+    "/api/system/auth/me",
+    { silent: true }
   )
 }
