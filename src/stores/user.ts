@@ -3,6 +3,7 @@ import type { LoginUser } from "@/types/auth/loginUser";
 import { getMeApi, logoutApi } from "@/api/auth/auth";
 import router from "@/router";
 import { ElMessage } from "element-plus";
+import { usePermissionStore } from "@/stores/permissionStore";
 
 
 // 定义用户状态管理
@@ -52,19 +53,27 @@ export const useUserStore = defineStore('user', {
                 console.error('Logout failed:', error)
             } finally {
                 this.clearUser()// 无论登出接口调用成功与否，都清除用户信息和认证令牌
+                const permissionStore = usePermissionStore()// 获取权限状态管理实例
+                permissionStore.clearPermissions()// 清除权限信息
                 router.replace('/login')// 无论登出接口调用成功与否，都跳转到登录页
             }
         },
         async fetchUser() {
             if (this.loading) return // 避免重复请求
             this.loading = true// 设置加载状态
+            const permissionStore = usePermissionStore()// 获取权限状态管理实例
             try {
                 const res = await getMeApi()
                 const result = res.data
-
+                const resultData = result.data
+                console.log('fetchUser result:', result)
                 if (result.code === 200) {
+                    
                     //覆盖用户（关键）
-                    this.setUser(result.data)
+                    this.setUser(resultData.user)      
+                    permissionStore.setMenus(resultData.menus)// 设置菜单列表
+                    permissionStore.setPermissions(resultData.permissions)// 设置权限列表
+                    permissionStore.setLoaded(true)// 设置加载状态为已加载              
                 } else {
                     //  token 无效
                     this.clearUser()
@@ -75,6 +84,7 @@ export const useUserStore = defineStore('user', {
 
                 //  失败说明未登录 / token 失效
                 this.clearUser()
+                permissionStore.clearPermissions()// 清除权限信息
                 throw error
             } finally {
                 this.loading = false// 重置加载状态

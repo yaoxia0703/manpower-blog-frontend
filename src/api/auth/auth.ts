@@ -1,6 +1,6 @@
 import http from '@/api/common/http'
 import type { Result } from '@/types/common/result'
-import type { LoginResponse, LoginUser } from '@/types/auth/loginUser'
+import type { LoginResponse, LoginUser, MeResponse } from '@/types/auth/loginUser'
 import type { LoginRequest } from '@/types/auth/loginRequest'
 
 export function loginApi(loginRequest: LoginRequest) {
@@ -20,7 +20,7 @@ export function logoutApi() {
 }
 
 export function getMeApi() {
-  return http.get<Result<LoginUser>>(
+  return http.get<Result<MeResponse>>(
     "/api/system/auth/me",
     { silent: true }
   )
