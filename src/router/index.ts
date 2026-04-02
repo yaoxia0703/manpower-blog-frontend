@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { usePermissionStore } from '@/stores/permissionStore'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -44,14 +45,17 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const userStore = useUserStore()
   const token = userStore.getToken()
+  const permissionStore = usePermissionStore()
 
   // 1. 已登录访问 login → 跳首页
   if (to.path === '/login' && token) {
     return '/admin/dashboard'
   }
 
-  // 2. 需要登录但没 token
-  if (to.meta.requiresAuth && !token) {
+  // 2. 判断是否需要登录
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+
+  if (requiresAuth && !token) {
     return '/login'
   }
 
@@ -65,7 +69,35 @@ router.beforeEach(async (to) => {
     }
   }
 
-  // 4. 放行
+  //4. 做 menu 判断
+  if (requiresAuth) {
+    const menu = permissionStore.findMenuByPath(
+      to.path,
+      permissionStore.menus
+    )
+
+    // if (!menu) {
+    //   return '/404' // 没有权限访问，跳转到 404 页面
+    // }
+    // 公共error尚未实现，暂时先登出回登录页
+    console.log('menu', menu)
+    if (!menu) {//
+      await userStore.logout()
+      return '/login'
+    }
+    // 这里可以根据 menu.permission 来判断是否有权限访问
+    const permission = permissionStore.permissions;
+    const permissionCode = menu.permission
+
+    console.log('permission', permission)
+    console.log('permissionCode', permissionCode)
+    if (permissionCode && !permissionStore.hasPermission(permissionCode)) {
+      await userStore.logout()
+      return '/login'
+    }
+  }
+
+  // 5. 放行
   return true
 })
 

@@ -6,7 +6,7 @@
 
     <div class="right">
       <span class="user">Admin</span>
-      <el-button type="text">退出</el-button>
+      <el-button type="danger">退出</el-button>
     </div>
   </div>
 </template>
