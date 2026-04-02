@@ -1,6 +1,6 @@
 import http from '@/api/common/http'
 import type { Result } from '@/types/common/result'
-import type { LoginResponse, LoginUser, MeResponse } from '@/types/auth/loginUser'
+import type { LoginResponse, MeResponse } from '@/types/auth/loginUser'
 import type { LoginRequest } from '@/types/auth/loginRequest'
 
 export function loginApi(loginRequest: LoginRequest) {
