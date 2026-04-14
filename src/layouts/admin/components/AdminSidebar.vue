@@ -1,14 +1,11 @@
 <template>
-  <el-menu
-    :default-active="route.path"
-    class="menu"
-    background-color="#001529"
-    text-color="#fff"
-    active-text-color="#409eff"
-    router
-  >
+  <el-menu :default-active="route.path" class="menu" background-color="#001529" text-color="#fff"
+    active-text-color="#409eff" router>
     <!-- 固定首页 -->
     <el-menu-item index="/admin/dashboard">
+      <el-icon>
+        <component :is="'House'" />
+      </el-icon>
       ダッシュボード
     </el-menu-item>
 
@@ -28,6 +25,7 @@ import { usePermissionStore } from '@/stores/permissionStore'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import MenuItem from './MenuItem.vue'
+import { el } from 'element-plus/es/locale/index.mjs'
 
 const permissionStore = usePermissionStore()
 const route = useRoute()
