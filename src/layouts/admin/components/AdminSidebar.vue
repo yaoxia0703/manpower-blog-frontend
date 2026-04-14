@@ -25,7 +25,6 @@ import { usePermissionStore } from '@/stores/permissionStore'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import MenuItem from './MenuItem.vue'
-import { el } from 'element-plus/es/locale/index.mjs'
 
 const permissionStore = usePermissionStore()
 const route = useRoute()
