@@ -32,7 +32,13 @@ const routes: RouteRecordRaw[] = [
         name: 'User',
         component: () => import('@/views/admin/user/index.vue'),
         meta: { title: 'ユーザー管理' }
-      }
+      },
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/admin/role/index.vue'),
+        meta: { title: 'ロール管理' }
+      },
     ]
   }
 ]
@@ -71,10 +77,7 @@ router.beforeEach(async (to) => {
 
   //4. 做 menu 判断
   if (requiresAuth) {
-    const menu = permissionStore.findMenuByPath(
-      to.path,
-      permissionStore.menus
-    )
+    const menu = permissionStore.findMenuByPath(to.path)
 
     // if (!menu) {
     //   return '/404' // 没有权限访问，跳转到 404 页面
