@@ -41,10 +41,10 @@
 
       <el-table-column label="操作" align="right" width="380">
         <template #default="scope">
-          <el-button size="small" @click="handleEdit(scope.$index, scope.row)">
+          <el-button size="small" @click="handleEdit(scope.row)">
             編集
           </el-button>
-          <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">
+          <el-button size="small" type="danger" @click="handleDelete(scope.row)">
             削除
           </el-button>
         </template>
@@ -99,7 +99,7 @@ function handleAdd() {
 }
 
 // 編集ダイアログを開く
-async function handleEdit(index: number, row: RoleView) {
+async function handleEdit(row: RoleView) {
   try {
     const res = await detailRoleApi(row.id).then(res => res.data)
 
@@ -117,7 +117,7 @@ async function handleEdit(index: number, row: RoleView) {
 }
 
 // 削除ダイアログを開く
-async function handleDelete(index: number, row: RoleView) {
+async function handleDelete(row: RoleView) {
   try {
     await ElMessageBox.confirm(
       `役割「${row.name}」を削除しますか？`,
