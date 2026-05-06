@@ -15,13 +15,13 @@ export function logoutApi() {
   return http.post<Result<null>>(
     "/api/system/auth/logout",
     {},
-    { silent: true }
+    { silent: true }// 登录状态过期时不弹出错误提示
   )
 }
 
 export function getMeApi() {
   return http.get<Result<MeResponse>>(
     "/api/system/auth/me",
-    { silent: true }
+    { silent: true }// 登录状态过期时不弹出错误提示
   )
 }

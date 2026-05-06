@@ -2,27 +2,27 @@
   <el-container class="layout">
     <!-- Header -->
     <el-header class="layout-header">
-      <AdminHeader />
+      <SystemHeader />
     </el-header>
 
     <el-container>
       <!-- Sidebar -->
       <el-aside width="200px" class="layout-sidebar">
-        <AdminSidebar />
+        <SystemSidebar />
       </el-aside>
 
       <!-- Main -->
       <el-main class="layout-main">
-        <AdminMain />
+        <SystemMain />
       </el-main>
     </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import AdminHeader from './components/AdminHeader.vue'
-import AdminSidebar from './components/AdminSidebar.vue'
-import AdminMain from './components/AdminMain.vue'
+import SystemHeader from './components/SystemHeader.vue'
+import SystemSidebar from './components/SystemSidebar.vue'
+import SystemMain from './components/SystemMain.vue'
 </script>
 
 <style scoped>

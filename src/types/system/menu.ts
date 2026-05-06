@@ -1,4 +1,5 @@
 import type { MenuType } from "../enums/menu"
+import type { Status } from "../enums/status"
 
 // 定义菜单项接口
 export interface MenuItem {
@@ -10,7 +11,7 @@ export interface MenuItem {
   icon?: string// 菜单图标
   type: MenuType// 菜单类型，0 表示目录，1 表示菜单，2 表示按钮
   sort?: number// 菜单排序
-  status?: number// 菜单状态，0 表示禁用，1 表示启用
+  status?: Status// 菜单状态，0 表示禁用，1 表示启用
 
   permission?: string // 权限标识符
   children?: MenuItem[]// 子菜单项

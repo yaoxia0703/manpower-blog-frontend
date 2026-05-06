@@ -29,7 +29,7 @@ import MenuItem from './MenuItem.vue'
 const permissionStore = usePermissionStore()
 const route = useRoute()
 
-// 过滤掉按钮类型（type = 2）
+// 过滤掉按钮类型(type = 2)
 const menus = computed(() =>
   permissionStore.menus.filter(menu => menu.type !== 2)
 )

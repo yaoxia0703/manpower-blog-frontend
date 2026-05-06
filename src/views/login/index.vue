@@ -89,7 +89,7 @@ const handleLogin = async () => {
       // console.log('用户信息已保存到 Pinia:', userStore.user)
       // console.log('Token 已保存到 Pinia:', userStore.token)
 
-      await router.push('/admin/dashboard')
+      await router.push('/system/dashboard')
       ElMessage.success('ログイン成功')// 显示登录成功消息
     } else {
       // 登录失败，显示错误信息

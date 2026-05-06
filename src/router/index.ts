@@ -6,7 +6,7 @@ import { usePermissionStore } from '@/stores/permissionStore'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/admin/dashboard'
+    redirect: '/system/dashboard'
   },
 
   {
@@ -16,27 +16,27 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/admin',
-    name: 'Admin',
-    component: () => import('@/layouts/admin/AdminLayout.vue'),
+    path: '/system',
+    name: 'System',
+    component: () => import('@/layouts/system/SystemLayout.vue'),
     meta: { requiresAuth: true },
     children: [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/admin/dashboard/index.vue'),
+        component: () => import('@/views/system/dashboard/index.vue'),
         meta: { title: 'ダッシュボード' }
       },
       {
         path: 'user',
         name: 'User',
-        component: () => import('@/views/admin/user/index.vue'),
+        component: () => import('@/views/system/user/index.vue'),
         meta: { title: 'ユーザー管理' }
       },
       {
         path: 'role',
         name: 'Role',
-        component: () => import('@/views/admin/role/index.vue'),
+        component: () => import('@/views/system/role/index.vue'),
         meta: { title: 'ロール管理' }
       },
     ]
@@ -55,7 +55,7 @@ router.beforeEach(async (to) => {
 
   // 1. 已登录访问 login → 跳首页
   if (to.path === '/login' && token) {
-    return '/admin/dashboard'
+    return '/system/dashboard'
   }
 
   // 2. 判断是否需要登录
