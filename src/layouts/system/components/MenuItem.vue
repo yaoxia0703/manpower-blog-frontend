@@ -1,24 +1,35 @@
 <template>
-  <!-- 按钮类型不显示 -->
+  <!-- ボタンタイプはメニューに表示しない -->
   <template v-if="!isButton">
-    <!-- 没有子菜单 -->
-    <el-menu-item v-if="!hasChildren" :index="menu.path">
+    <!-- 子メニューなし -->
+    <el-menu-item
+      v-if="!hasChildren"
+      :index="menu.path"
+    >
       <el-icon v-if="menu.icon">
         <component :is="menu.icon" />
       </el-icon>
+
       <span>{{ menu.name }}</span>
     </el-menu-item>
 
-    <!-- 有子菜单 -->
-    <el-sub-menu v-else :index="menu.path || String(menu.id)">
+    <!-- 子メニューあり -->
+    <el-sub-menu
+      v-else
+      :index="menu.path || String(menu.id)"
+    >
       <template #title>
         <el-icon v-if="menu.icon">
           <component :is="menu.icon" />
         </el-icon>
+
         <span>{{ menu.name }}</span>
       </template>
 
-      <template v-for="child in visibleChildren" :key="child.id">
+      <template
+        v-for="child in visibleChildren"
+        :key="child.id"
+      >
         <MenuItem :menu="child" />
       </template>
     </el-sub-menu>
@@ -26,13 +37,17 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * サイドバーメニュー項目コンポーネント
+ * 再帰構造でメニュー階層を表示する
+ */
 import { computed } from 'vue'
 import type { MenuItem } from '@/types/system/menu'
 import { MenuType } from '@/types/enums/menu'
-import { ElIcon } from 'element-plus';
+import { ElIcon } from 'element-plus'
 
 defineOptions({
-  name: 'MenuItem'
+  name: 'MenuItem',
 })
 
 const props = defineProps<{
@@ -40,21 +55,24 @@ const props = defineProps<{
 }>()
 
 /**
- * 是否是按钮（不显示在菜单）
+ * ボタンタイプかどうか
+ * ボタンはサイドメニューに表示しない
  */
-const isButton = computed(() => props.menu.type === MenuType.BUTTON)
+const isButton = computed(() => {
+  return props.menu.type === MenuType.BUTTON
+})
 
 /**
- * 过滤掉按钮类型子菜单
+ * ボタンタイプを除外した子メニュー一覧
  */
 const visibleChildren = computed(() => {
   return (props.menu.children || []).filter(
-    child => child.type !== MenuType.BUTTON
+    child => child.type !== MenuType.BUTTON,
   )
 })
 
 /**
- * 是否有子菜单
+ * 子メニューを持っているかどうか
  */
 const hasChildren = computed(() => {
   return visibleChildren.value.length > 0

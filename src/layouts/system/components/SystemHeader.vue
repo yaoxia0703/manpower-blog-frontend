@@ -6,17 +6,32 @@
 
     <div class="right">
       <span class="user">Admin</span>
-      <el-button type="danger" @click="goLogin">退出</el-button>
+
+      <el-button
+        type="danger"
+        @click="goLogin"
+      >
+        ログアウト
+      </el-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user';
+/**
+ * システムヘッダーコンポーネント
+ * ユーザー情報表示およびログアウト機能を提供する
+ */
+import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+
+/**
+ * ログアウト処理
+ * ユーザー情報および認証トークンを削除する
+ */
 const goLogin = async () => {
-  await userStore.logout()// 调用登出方法，清除用户信息和认证令牌
+  await userStore.logout()
 }
 </script>
 

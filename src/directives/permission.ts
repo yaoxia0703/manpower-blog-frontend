@@ -1,12 +1,18 @@
 import type { Directive, DirectiveBinding } from 'vue'
 import { usePermissionStore } from '@/stores/permissionStore'
 
-// 权限检查核心逻辑
-// 支持：
-// 1. string：单权限
-// 2. string[]：多权限（默认 OR）
-// 3. { value: string[], mode: 'and' | 'or' }：自定义模式
-function checkPermission(el: HTMLElement, binding: DirectiveBinding) {
+/**
+ * 権限チェック処理
+ *
+ * 対応形式：
+ * 1. string                 : 単一権限
+ * 2. string[]               : 複数権限（OR判定）
+ * 3. { value, mode }        : AND / OR 判定
+ */
+function checkPermission(
+  el: HTMLElement,
+  binding: DirectiveBinding,
+) {
   const permissionStore = usePermissionStore()
   const value = binding.value
 
@@ -14,42 +20,53 @@ function checkPermission(el: HTMLElement, binding: DirectiveBinding) {
 
   let hasPermission = false
 
-  // 1. 字符串
+  // 単一権限
   if (typeof value === 'string') {
     hasPermission = permissionStore.hasPermission(value)
   }
 
-  // 2. 数组（OR）
+  // 複数権限（OR判定）
   else if (Array.isArray(value)) {
-    hasPermission = value.some(p =>
-      permissionStore.hasPermission(p)
+    hasPermission = value.some(permission =>
+      permissionStore.hasPermission(permission),
     )
   }
 
-  // 3. 对象（AND / OR）
+  // AND / OR 判定
   else if (typeof value === 'object') {
     const { value: perms, mode = 'or' } = value
 
     if (Array.isArray(perms)) {
       hasPermission =
         mode === 'and'
-          ? perms.every(p => permissionStore.hasPermission(p))
-          : perms.some(p => permissionStore.hasPermission(p))
+          ? perms.every(permission =>
+              permissionStore.hasPermission(permission),
+            )
+          : perms.some(permission =>
+              permissionStore.hasPermission(permission),
+            )
     }
   }
 
-  el.style.display = hasPermission ? '' : 'none'// 根据权限结果显示或隐藏元素
+  // 権限に応じて表示・非表示を切り替える
+  el.style.display = hasPermission ? '' : 'none'
 }
 
-// 权限指令
-export const permissionDirective: Directive = {// 在元素挂载和更新时检查权限
+/**
+ * 権限ディレクティブ
+ * 要素表示時および更新時に権限チェックを行う
+ */
+export const permissionDirective: Directive = {
   mounted(el, binding) {
     checkPermission(el, binding)
   },
 
   updated(el, binding) {
-    // ⭐ 避免无效重复计算
-    if (binding.value === binding.oldValue) return
+    // 同一値の場合は再計算しない
+    if (binding.value === binding.oldValue) {
+      return
+    }
+
     checkPermission(el, binding)
-  }
+  },
 }

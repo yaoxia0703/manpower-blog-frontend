@@ -1,17 +1,17 @@
 <template>
   <el-container class="layout">
-    <!-- Header -->
+    <!-- ヘッダー -->
     <el-header class="layout-header">
       <SystemHeader />
     </el-header>
 
     <el-container>
-      <!-- Sidebar -->
+      <!-- サイドバー -->
       <el-aside width="200px" class="layout-sidebar">
         <SystemSidebar />
       </el-aside>
 
-      <!-- Main -->
+      <!-- メインコンテンツ -->
       <el-main class="layout-main">
         <SystemMain />
       </el-main>
@@ -20,6 +20,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * システム共通レイアウト
+ * Header・Sidebar・Main コンテンツで構成される
+ */
 import SystemHeader from './components/SystemHeader.vue'
 import SystemSidebar from './components/SystemSidebar.vue'
 import SystemMain from './components/SystemMain.vue'

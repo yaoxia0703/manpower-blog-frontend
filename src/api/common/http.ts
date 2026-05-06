@@ -10,13 +10,19 @@ import { extractErrorMessage } from '@/utils/error'
 import type { Result } from '@/types/common/result'
 import router from '@/router'
 
+/**
+ * 共通HTTPクライアント
+ * 認証トークン付与・共通エラーハンドリング・レスポンス制御を行う
+ */
 const http: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   withCredentials: true,
   timeout: 10000,
 })
 
-// 判断是否为 Result<T> 结构
+/**
+ * Result<T> 形式のレスポンスかどうかを判定する
+ */
 function isResultShape(x: unknown): x is Result<unknown> {
   return (
     typeof x === 'object' &&
@@ -26,34 +32,43 @@ function isResultShape(x: unknown): x is Result<unknown> {
   )
 }
 
-// 是否需要跳转错误页
+/**
+ * エラーページへ遷移する必要があるかを判定する
+ */
 function shouldRedirect(code?: number): boolean {
   if (!code) return false
   return [403, 404, 500, 502, 503].includes(code)
 }
 
-// 是否为静默模式（不提示错误）
+/**
+ * サイレントモードかどうかを判定する
+ * true の場合は共通エラーメッセージを表示しない
+ */
 function isSilent(config?: { silent?: boolean }): boolean {
   return config?.silent === true
 }
 
-/* 请求拦截器 */
+/* リクエストインターセプター */
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = sessionStorage.getItem('token')
+
+  // JWTトークンを自動付与
   if (token) {
     config.headers.set('Authorization', `Bearer ${token}`)
   }
+
   return config
 })
 
-/* 响应拦截器 */
+/* レスポンスインターセプター */
 http.interceptors.response.use(
   (res: AxiosResponse) => {
     const data = res.data as unknown
     const silent = isSilent(res.config)
 
-    // 业务错误处理（Result<T>）
+    // 業務エラー処理（Result<T>）
     if (isResultShape(data) && data.code !== 200) {
+      // エラーページへ遷移
       if (shouldRedirect(data.code)) {
         router.replace({
           name: 'ErrorPage',
@@ -65,7 +80,7 @@ http.interceptors.response.use(
       } else if (!silent) {
         let msg = data.message
 
-        // 优先解析字段错误（errors / items）
+        // フィールド単位エラーを優先表示
         const items =
           (data as any)?.data?.items ||
           (data as any)?.data?.errors
@@ -74,7 +89,7 @@ http.interceptors.response.use(
           msg = items[0].message || items[0].key || msg
         }
 
-        ElMessage.error(msg ?? '发生错误')
+        ElMessage.error(msg ?? 'エラーが発生しました')
       }
 
       return Promise.reject({
@@ -90,14 +105,15 @@ http.interceptors.response.use(
     const status = error.response?.status
     const silent = isSilent(error.config)
 
-    // 未认证处理（401）
+    // 未認証（401）
     if (status === 401) {
       sessionStorage.clear()
       router.replace('/login')
+
       return Promise.reject(error)
     }
 
-    // 需要跳转错误页的状态码
+    // エラーページへ遷移するステータス
     if (shouldRedirect(status)) {
       const body = error.response?.data as any
 
@@ -122,14 +138,14 @@ http.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    // 统一错误提示入口
+    // 共通エラーメッセージ表示
     if (!silent) {
       const extracted = extractErrorMessage(error)
 
       ElMessage.error(
         typeof extracted === 'string' && extracted.trim()
           ? extracted
-          : '网络异常，请稍后重试',
+          : 'ネットワークエラーが発生しました',
       )
     }
 

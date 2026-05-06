@@ -1,26 +1,44 @@
-import 'axios' // 引入 axios 类型声明（用于扩展类型）
+import 'axios' // axios 型定義拡張用
 
-declare module 'axios' { // 声明模块扩展 axios
-  export interface AxiosRequestConfig { // 扩展外部使用的请求配置类型
+declare module 'axios' {
+  /**
+   * 外部利用向け Axios リクエスト設定拡張
+   */
+  export interface AxiosRequestConfig {
     /**
-     * true 时不显示 UI 错误提示
+     * true の場合、共通UIエラーメッセージを表示しない
      */
-    silent?: boolean // 控制是否静默（不弹错误提示）
-
-    /**
-     * true 时不携带 Authorization 头
-     */
-    skipAuth?: boolean // 控制是否跳过 token 注入
+    silent?: boolean
 
     /**
-     * 手动指定请求 ID（用于日志追踪等）
+     * true の場合、Authorizationヘッダーを付与しない
      */
-    requestId?: string // 自定义请求唯一标识
+    skipAuth?: boolean
+
+    /**
+     * リクエスト識別子
+     * ログ追跡などに利用する
+     */
+    requestId?: string
   }
 
-  export interface InternalAxiosRequestConfig { // 扩展 axios 内部使用的请求配置类型
-    silent?: boolean // 内部也需要识别 silent 参数
-    skipAuth?: boolean // 内部也需要识别 skipAuth 参数
-    requestId?: string // 内部也需要识别 requestId 参数
+  /**
+   * Axios 内部用リクエスト設定拡張
+   */
+  export interface InternalAxiosRequestConfig {
+    /**
+     * サイレントモード
+     */
+    silent?: boolean
+
+    /**
+     * Authorizationヘッダー付与スキップ
+     */
+    skipAuth?: boolean
+
+    /**
+     * リクエスト識別子
+     */
+    requestId?: string
   }
 }

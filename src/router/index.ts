@@ -3,16 +3,19 @@ import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { usePermissionStore } from '@/stores/permissionStore'
 
+/**
+ * 静的ルート定義
+ */
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/system/dashboard'
+    redirect: '/system/dashboard',
   },
 
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/login/index.vue')
+    component: () => import('@/views/login/index.vue'),
   },
 
   {
@@ -25,47 +28,64 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/system/dashboard/index.vue'),
-        meta: { title: 'ダッシュボード' }
+        meta: { title: 'ダッシュボード' },
       },
+
       {
         path: 'user',
         name: 'User',
         component: () => import('@/views/system/user/index.vue'),
-        meta: { title: 'ユーザー管理' }
+        meta: { title: 'ユーザー管理' },
       },
+
       {
         path: 'role',
         name: 'Role',
         component: () => import('@/views/system/role/index.vue'),
-        meta: { title: 'ロール管理' }
+        meta: { title: 'ロール管理' },
       },
-    ]
-  }
+    ],
+  },
 ]
 
+/**
+ * Vue Router インスタンス
+ */
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
+/**
+ * グローバルルートガード
+ * ログイン状態および権限チェックを行う
+ */
 router.beforeEach(async (to) => {
   const userStore = useUserStore()
-  const token = userStore.getToken()
   const permissionStore = usePermissionStore()
 
-  // 1. 已登录访问 login → 跳首页
+  const token = userStore.getToken()
+
+  // ログイン済みユーザーがログイン画面へアクセスした場合
   if (to.path === '/login' && token) {
     return '/system/dashboard'
   }
 
-  // 2. 判断是否需要登录
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  /**
+   * 認証が必要なルートか判定
+   */
+  const requiresAuth = to.matched.some(
+    record => record.meta.requiresAuth,
+  )
 
+  // 未ログインの場合はログイン画面へ遷移
   if (requiresAuth && !token) {
     return '/login'
   }
 
-  // 3. 恢复用户
+  /**
+   * ページ更新時のユーザー情報復元
+   */
   if (token && !userStore.user) {
     try {
       await userStore.fetchUser()
@@ -75,32 +95,41 @@ router.beforeEach(async (to) => {
     }
   }
 
-  //4. 做 menu 判断
+  /**
+   * メニュー権限チェック
+   */
   if (requiresAuth) {
     const menu = permissionStore.findMenuByPath(to.path)
 
-    // if (!menu) {
-    //   return '/404' // 没有权限访问，跳转到 404 页面
-    // }
-    // 公共error尚未实现，暂时先登出回登录页
+    // メニュー未存在の場合
+    // 共通エラーページ未実装のため、一旦ログアウトへ遷移
     console.log('menu', menu)
-    if (!menu) {//
+
+    if (!menu) {
       await userStore.logout()
       return '/login'
     }
-    // 这里可以根据 menu.permission 来判断是否有权限访问
-    const permission = permissionStore.permissions;
+
+    /**
+     * 権限コードチェック
+     */
+    const permissions = permissionStore.permissions
     const permissionCode = menu.permission
 
-    console.log('permission', permission)
+    console.log('permissions', permissions)
     console.log('permissionCode', permissionCode)
-    if (permissionCode && !permissionStore.hasPermission(permissionCode)) {
+
+    // 権限不足
+    if (
+      permissionCode &&
+      !permissionStore.hasPermission(permissionCode)
+    ) {
       await userStore.logout()
       return '/login'
     }
   }
 
-  // 5. 放行
+  // ルート許可
   return true
 })
 

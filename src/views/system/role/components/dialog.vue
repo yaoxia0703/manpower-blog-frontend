@@ -22,9 +22,12 @@
             </el-form-item>
         </el-form>
 
-        <!-- footer -->
+        <!-- Footer -->
         <template #footer>
-            <el-button @click="handleCancel">キャンセル</el-button>
+            <el-button @click="handleCancel">
+                キャンセル
+            </el-button>
+
             <el-button type="primary" :loading="submitLoading" @click="handleSubmit">
                 確認
             </el-button>
@@ -33,15 +36,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+/**
+ * ロール編集ダイアログ
+ * ロール新規作成・更新処理を行う
+ */
+import {
+    reactive,
+    ref,
+    watch,
+} from 'vue'
+
+import {
+    ElMessage,
+    type FormInstance,
+    type FormRules,
+} from 'element-plus'
+
 import type { RoleVO } from '@/types/role/reoleResponse'
-import { createRoleApi, updateRoleApi } from '@/api/system/role';
+
+import {
+    createRoleApi,
+    updateRoleApi,
+} from '@/api/system/role'
 
 /**
- * =========================
  * Props
- * =========================
  */
 const props = defineProps<{
     modelValue: boolean
@@ -49,64 +68,80 @@ const props = defineProps<{
 }>()
 
 /**
- * =========================
  * Emits
- * =========================
  */
 const emit = defineEmits<{
-    (e: 'update:modelValue', val: boolean): void
+    (
+        e: 'update:modelValue',
+        val: boolean,
+    ): void
+
     (e: 'success'): void
 }>()
 
 /**
- * =========================
- * 状态
- * =========================
+ * 状態管理
  */
 const visible = ref(false)
+
 const submitLoading = ref(false)
+
 const isEdit = ref(false)
 
 /**
- * =========================
- * 表单
- * =========================
+ * フォーム参照
  */
 const formRef = ref<FormInstance>()
 
+/**
+ * フォームデータ
+ */
 const form = reactive({
-    id: undefined as number | undefined,
+    id: undefined as
+        | number
+        | undefined,
+
     code: '',
     name: '',
     status: 1,
-    sort: 0
+    sort: 0,
 })
 
 /**
- * =========================
- * 校验规则
- * =========================
+ * バリデーションルール
  */
 const rules: FormRules = {
     code: [
-        { required: true, message: 'コードを入力してください', trigger: 'blur' }
+        {
+            required: true,
+            message:
+                'コードを入力してください',
+            trigger: 'blur',
+        },
     ],
+
     name: [
-        { required: true, message: '名前を入力してください', trigger: 'blur' }
-    ]
+        {
+            required: true,
+            message:
+                '名前を入力してください',
+            trigger: 'blur',
+        },
+    ],
 }
 
 /**
- * =========================
- * 监听 v-model
- * =========================
+ * v-model 監視
  */
 watch(
     () => props.modelValue,
     (val) => {
         visible.value = val
-        if (val) init()
-    }
+
+        if (val) {
+            init()
+        }
+    },
 )
 
 watch(visible, (val) => {
@@ -114,24 +149,27 @@ watch(visible, (val) => {
 })
 
 /**
- * =========================
- * 初始化
- * =========================
+ * 初期化処理
  */
 function init() {
+    // 編集モード
     if (props.data) {
         isEdit.value = true
-        Object.assign(form, props.data)
+
+        Object.assign(
+            form,
+            props.data,
+        )
     } else {
+        // 新規モード
         isEdit.value = false
+
         resetForm()
     }
 }
 
 /**
- * =========================
- * 重置
- * =========================
+ * フォーム初期化
  */
 function resetForm() {
     form.id = undefined
@@ -142,52 +180,80 @@ function resetForm() {
 }
 
 /**
- * =========================
- * 取消
- * =========================
+ * キャンセル処理
  */
 function handleCancel() {
     visible.value = false
 }
 
 /**
- * =========================
- * 提交
- * =========================
+ * 保存処理
  */
 function handleSubmit() {
-    formRef.value?.validate(async (valid) => {
-        if (!valid) return
-
-        submitLoading.value = true
-        try {
-            let res
-
-            if (isEdit.value) {
-                res = await updateRoleApi(form.id!, form).then(res => res.data)
-            } else {
-                res = await createRoleApi(form).then(res => res.data)
-            }
-
-            if (res && res.code !== 200) {
-                ElMessage.error(res.message)
+    formRef.value?.validate(
+        async (valid) => {
+            if (!valid) {
                 return
             }
 
-            ElMessage.success('保存成功しました')
-            emit('success')
-            visible.value = false
+            submitLoading.value = true
 
-        } catch (error: any) {
-            console.error('リクエスト失敗:', error)
-            ElMessage.error(error?.message || '通信エラーが発生しました')
-        } finally {
-            submitLoading.value = false
-        }
-    })
+            try {
+                let res
+
+                // 更新処理
+                if (isEdit.value) {
+                    res = await updateRoleApi(
+                        form.id!,
+                        form,
+                    ).then(
+                        res => res.data,
+                    )
+                } else {
+                    // 新規作成処理
+                    res = await createRoleApi(
+                        form,
+                    ).then(
+                        res => res.data,
+                    )
+                }
+
+                // 業務エラー
+                if (
+                    res &&
+                    res.code !== 200
+                ) {
+                    ElMessage.error(
+                        res.message,
+                    )
+
+                    return
+                }
+
+                ElMessage.success(
+                    '保存成功しました',
+                )
+
+                emit('success')
+
+                visible.value = false
+            } catch (error: any) {
+                console.error(
+                    'リクエスト失敗:',
+                    error,
+                )
+
+                ElMessage.error(
+                    error?.message ||
+                    '通信エラーが発生しました',
+                )
+            } finally {
+                submitLoading.value = false
+            }
+        },
+    )
 }
 </script>
-
 
 <style scoped>
 .input-number {

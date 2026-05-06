@@ -1,18 +1,66 @@
-import type { MenuType } from "../enums/menu"
-import type { Status } from "../enums/status"
+import type { MenuType } from '../enums/menu'
+import type { Status } from '../enums/status'
 
-// 定义菜单项接口
+/**
+ * メニュー情報
+ */
 export interface MenuItem {
-  id: number // 菜单 ID
-  parentId: number // 父菜单 ID，0 表示顶级菜单
-  name: string // 菜单名称
-  path: string// 菜单路径
-  component?: string// 菜单组件路径
-  icon?: string// 菜单图标
-  type: MenuType// 菜单类型，0 表示目录，1 表示菜单，2 表示按钮
-  sort?: number// 菜单排序
-  status?: Status// 菜单状态，0 表示禁用，1 表示启用
+  /**
+   * メニューID
+   */
+  id: number
 
-  permission?: string // 权限标识符
-  children?: MenuItem[]// 子菜单项
+  /**
+   * 親メニューID
+   * 0 の場合はルートメニュー
+   */
+  parentId: number
+
+  /**
+   * メニュー名称
+   */
+  name: string
+
+  /**
+   * メニューパス
+   */
+  path: string
+
+  /**
+   * コンポーネントパス
+   */
+  component?: string
+
+  /**
+   * メニューアイコン
+   */
+  icon?: string
+
+  /**
+   * メニュー種別
+   * DIRECTORY / MENU / BUTTON
+   */
+  type: MenuType
+
+  /**
+   * 表示順
+   */
+  sort?: number
+
+  /**
+   * メニュー状態
+   * 0: 無効
+   * 1: 有効
+   */
+  status?: Status
+
+  /**
+   * 権限コード
+   */
+  permission?: string
+
+  /**
+   * 子メニュー一覧
+   */
+  children?: MenuItem[]
 }

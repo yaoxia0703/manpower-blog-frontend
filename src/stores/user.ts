@@ -1,103 +1,213 @@
-import { defineStore } from "pinia";
-import type { LoginUser } from "@/types/auth/loginUser";
-import { getMeApi, logoutApi } from "@/api/auth/auth";
-import router from "@/router";
-import { ElMessage } from "element-plus";
-import { usePermissionStore } from "@/stores/permissionStore";
+import { defineStore } from 'pinia'
+import type { LoginUser } from '@/types/auth/loginUser'
+import { getMeApi, logoutApi } from '@/api/auth/auth'
+import router from '@/router'
+import { ElMessage } from 'element-plus'
+import { usePermissionStore } from '@/stores/permissionStore'
 
-
-// 定义用户状态管理
+/**
+ * ユーザー状態管理Store
+ * ログインユーザー情報および認証状態を管理する
+ */
 export const useUserStore = defineStore('user', {
-    // 定义状态
+    /**
+     * 状態定義
+     */
     state: () => ({
-        user: null as LoginUser | null,// 用户信息
-        token: '' as string,// 认证令牌
-        loading: false as boolean,// 加载状态
+        user: null as LoginUser | null, // ユーザー情報
+        token: '' as string, // JWTトークン
+        loading: false as boolean, // 読み込み状態
     }),
-    // 定义方法
+
+    /**
+     * 操作定義
+     */
     actions: {
-        // 设置认证令牌
+        /**
+         * JWTトークン設定
+         */
         setToken(token: string) {
-            this.token = token;
-            sessionStorage.setItem('token', token);// 将令牌存储在 sessionStorage 中
+            this.token = token
+
+            // SessionStorageへ保存
+            sessionStorage.setItem('token', token)
         },
-        // 设置用户信息
+
+        /**
+         * ユーザー情報設定
+         */
         setUser(user: LoginUser) {
-            this.user = user;
-            sessionStorage.setItem('user', JSON.stringify(user));// 将用户信息存储在 sessionStorage 中
+            this.user = user
+
+            // SessionStorageへ保存
+            sessionStorage.setItem(
+                'user',
+                JSON.stringify(user),
+            )
         },
-        // 获取认证令牌
+
+        /**
+         * JWTトークン取得
+         * Pinia優先、未存在時はSessionStorageから取得する
+         */
         getToken() {
-            // 优先从 Pinia 状态中获取令牌，如果没有则从 sessionStorage 中获取
-            return this.token || sessionStorage.getItem('token') || '';
+            return (
+                this.token ||
+                sessionStorage.getItem('token') ||
+                ''
+            )
         },
-        // 获取用户信息
+
+        /**
+         * ユーザー情報取得
+         * Pinia優先、未存在時はSessionStorageから復元する
+         */
         getUser() {
-            // 优先从 Pinia 状态中获取用户信息，如果没有则从 sessionStorage 中获取
-            if (this.user) return this.user
+            if (this.user) {
+                return this.user
+            }
+
             const userStr = sessionStorage.getItem('user')
-            return userStr ? JSON.parse(userStr) : null
+
+            return userStr
+                ? JSON.parse(userStr)
+                : null
         },
-        // 清除用户信息和认证令牌
+
+        /**
+         * ユーザー情報初期化
+         * JWTトークンおよびユーザー情報を削除する
+         */
         clearUser() {
-            this.user = null;
-            this.token = '';
-            sessionStorage.removeItem('token');// 从 sessionStorage 中移除令牌
-            sessionStorage.removeItem('user');// 从 sessionStorage 中移除用户信息
+            this.user = null
+            this.token = ''
+
+            // SessionStorage削除
+            sessionStorage.removeItem('token')
+            sessionStorage.removeItem('user')
         },
+
+        /**
+         * ログアウト処理
+         */
         async logout() {
             try {
-                await logoutApi()// 调用登出接口
-                ElMessage.success('ログアウトしました')// 显示登出成功消息
+                // ログアウトAPI呼び出し
+                await logoutApi()
+
+                ElMessage.success(
+                    'ログアウトしました',
+                )
             } catch (error) {
-                console.error('Logout failed:', error)
+                console.error(
+                    'Logout failed:',
+                    error,
+                )
             } finally {
-                this.clearUser()// 无论登出接口调用成功与否，都清除用户信息和认证令牌
-                const permissionStore = usePermissionStore()// 获取权限状态管理实例
-                permissionStore.clearPermissions()// 清除权限信息
-                router.replace('/login')// 无论登出接口调用成功与否，都跳转到登录页
+                // ローカル状態クリア
+                this.clearUser()
+
+                const permissionStore =
+                    usePermissionStore()
+
+                // 権限情報クリア
+                permissionStore.clearPermissions()
+
+                // ログイン画面へ遷移
+                router.replace('/login')
             }
         },
+
+        /**
+         * ログインユーザー情報取得
+         * メニュー・権限情報も同時に初期化する
+         */
         async fetchUser() {
-            if (this.loading) return // 避免重复请求
-            this.loading = true// 设置加载状态
-            const permissionStore = usePermissionStore()// 获取权限状态管理实例
+            // 重複リクエスト防止
+            if (this.loading) {
+                return
+            }
+
+            this.loading = true
+
+            const permissionStore =
+                usePermissionStore()
+
             try {
                 const res = await getMeApi()
+
                 const result = res.data
                 const resultData = result.data
-                console.log('fetchUser result:', result)
+
+                console.log(
+                    'fetchUser result:',
+                    result,
+                )
+
                 if (result.code === 200) {
-                    
-                    //覆盖用户（关键）
-                    this.setUser(resultData.user)      
-                    permissionStore.setMenus(resultData.menus)// 设置菜单列表
-                    permissionStore.setPermissions(resultData.permissions)// 设置权限列表
-                    permissionStore.setLoaded(true)// 设置加载状态为已加载              
+                    // ユーザー情報更新
+                    this.setUser(resultData.user)
+
+                    // メニュー一覧設定
+                    permissionStore.setMenus(
+                        resultData.menus,
+                    )
+
+                    // 権限一覧設定
+                    permissionStore.setPermissions(
+                        resultData.permissions,
+                    )
+
+                    // 読み込み完了
+                    permissionStore.setLoaded(true)
                 } else {
-                    //  token 无效
+                    // token無効
                     this.clearUser()
-                    throw new Error(result.message || 'Failed to fetch user info')
+
+                    throw new Error(
+                        result.message ||
+                        'Failed to fetch user info',
+                    )
                 }
             } catch (error) {
-                console.error('fetchUser failed:', error)
+                console.error(
+                    'fetchUser failed:',
+                    error,
+                )
 
-                //  失败说明未登录 / token 失效
+                // 未ログインまたはtoken失効
                 this.clearUser()
-                permissionStore.clearPermissions()// 清除权限信息
+
+                // 権限情報初期化
+                permissionStore.clearPermissions()
+
                 throw error
             } finally {
-                this.loading = false// 重置加载状态
+                // 読み込み状態解除
+                this.loading = false
             }
         },
+
+        // /**
+        //  * ユーザー情報再取得
+        //  */
         // async refreshUser() {
-        //     try {
-        //         await this.fetchUser()// 刷新用户信息
-        //         ElMessage.success('ユーザー情報を更新しました')// 显示刷新成功消息
-        //     } catch (error) {
-        //         console.error('refreshUser failed:', error)
-        //         ElMessage.error('ユーザー情報の更新に失敗しました')// 显示刷新失败消息
-        //     }
+        //   try {
+        //     await this.fetchUser()
+
+        //     ElMessage.success(
+        //       'ユーザー情報を更新しました',
+        //     )
+        //   } catch (error) {
+        //     console.error(
+        //       'refreshUser failed:',
+        //       error,
+        //     )
+
+        //     ElMessage.error(
+        //       'ユーザー情報の更新に失敗しました',
+        //     )
+        //   }
         // }
-    }
+    },
 })

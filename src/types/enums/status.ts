@@ -1,6 +1,21 @@
-export const Status = {// 状态枚举 只负责有效与无效的状态
+/**
+ * 状態定義
+ * 有効・無効状態を表す
+ */
+export const Status = {
+  /**
+   * 無効
+   */
   DISABLED: 0,
-  ENABLED: 1
+
+  /**
+   * 有効
+   */
+  ENABLED: 1,
 } as const
 
-export type Status = typeof Status[keyof typeof Status] 
+/**
+ * 状態型
+ */
+export type Status =
+  typeof Status[keyof typeof Status]

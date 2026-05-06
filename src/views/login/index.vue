@@ -16,95 +16,184 @@
           <el-button type="primary" class="login-btn" native-type="submit">
             ログイン
           </el-button>
-          <div v-if="loginError" class="error-message">{{ loginError }}</div>
+
+          <div v-if="loginError" class="error-message">
+            {{ loginError }}
+          </div>
         </el-form-item>
       </el-form>
 
       <div class="footer">
-        <a href="#">パスワードをお忘れですか？</a>
+        <a href="#">
+          パスワードをお忘れですか？
+        </a>
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * ログイン画面
+ * ユーザー認証およびログイン処理を行う
+ */
 defineOptions({
-  name: 'AdminLogin',// 组件名称
+  name: 'SystemLogin', // コンポーネント名
 })
+
 import { reactive, ref } from 'vue'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { loginApi } from '@/api/auth/auth'
+import {
+  ElMessage,
+  type FormInstance,
+  type FormRules,
+} from 'element-plus'
+
 import { useRouter } from 'vue-router'
+
+import { loginApi } from '@/api/auth/auth'
+import { useUserStore } from '@/stores/user'
 import { ACCOUNT_TYPE } from '@/types/enums/account'
 import type { LoginRequest } from '@/types/auth/loginRequest'
-import { useUserStore } from '@/stores/user'
 import { resolveBizErrorMessage } from '@/utils/errorHandler'
 
-
+/**
+ * ログインエラーメッセージ
+ */
 const loginError = ref<string>('')
 
-// 路由
+/**
+ * Router
+ */
 const router = useRouter()
-// 用户状态管理
+
+/**
+ * ユーザー状態管理
+ */
 const userStore = useUserStore()
-// 表单数据
+
+/**
+ * ログインフォーム
+ */
 const form = reactive<LoginRequest>({
-  accountType: ACCOUNT_TYPE.EMAIL, // 默认邮箱登录
+  accountType: ACCOUNT_TYPE.EMAIL, // デフォルトはメールログイン
   accountValue: '',
   password: '',
 })
 
-
+/**
+ * Form参照
+ */
 const formRef = ref<FormInstance>()
 
-// 校验规则
+/**
+ * バリデーションルール
+ */
 const rules: FormRules = {
   accountValue: [
-    { required: true, message: 'IDを入力してください', trigger: 'blur' },
-    { min: 8, message: 'IDは8文字以上である必要があります', trigger: 'blur' },
-    { max: 100, message: 'IDは100文字以内である必要があります', trigger: 'blur' },
+    {
+      required: true,
+      message: 'IDを入力してください',
+      trigger: 'blur',
+    },
+    {
+      min: 8,
+      message:
+        'IDは8文字以上である必要があります',
+      trigger: 'blur',
+    },
+    {
+      max: 100,
+      message:
+        'IDは100文字以内である必要があります',
+      trigger: 'blur',
+    },
   ],
+
   password: [
-    { required: true, message: 'パスワードを入力してください', trigger: 'blur' },
-    { min: 8, message: 'パスワードは8文字以上である必要があります', trigger: 'blur' },
-    { max: 16, message: 'パスワードは16文字以内である必要があります', trigger: 'blur' },
+    {
+      required: true,
+      message:
+        'パスワードを入力してください',
+      trigger: 'blur',
+    },
+    {
+      min: 8,
+      message:
+        'パスワードは8文字以上である必要があります',
+      trigger: 'blur',
+    },
+    {
+      max: 16,
+      message:
+        'パスワードは16文字以内である必要があります',
+      trigger: 'blur',
+    },
   ],
 }
 
-// 登录
+/**
+ * ログイン処理
+ */
 const handleLogin = async () => {
-  const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) return
+  // バリデーション実行
+  const valid = await formRef.value
+    ?.validate()
+    .catch(() => false)
+
+  if (!valid) {
+    return
+  }
+
   try {
     const result = await loginApi(form)
-    const resultData = result.data
-    if (resultData.code===200) {
-      // 登录成功，处理用户信息
-      
-      const data = resultData.data
-      // 将用户信息和认证令牌保存到 Pinia
-      userStore.setToken(data.accessToken)
-      // 获取用户信息并保存到 Pinia
-      await userStore.fetchUser()
-      // console.log('用户信息已保存到 Pinia:', userStore.user)
-      // console.log('Token 已保存到 Pinia:', userStore.token)
 
-      await router.push('/system/dashboard')
-      ElMessage.success('ログイン成功')// 显示登录成功消息
+    const resultData = result.data
+
+    if (resultData.code === 200) {
+      /**
+       * ログイン成功
+       */
+      const data = resultData.data
+
+      // JWT保存
+      userStore.setToken(data.accessToken)
+
+      // ユーザー情報取得
+      await userStore.fetchUser()
+
+      // ダッシュボードへ遷移
+      await router.push(
+        '/system/dashboard',
+      )
+
+      ElMessage.success(
+        'ログイン成功',
+      )
     } else {
-      // 登录失败，显示错误信息
-      console.error('登录失败: 无效的用户名或密码')
-      loginError.value = '无効なユーザー名またはパスワード'
+      /**
+       * ログイン失敗
+       */
+      console.error(
+        'ログイン失敗: 無効なユーザー名またはパスワード',
+      )
+
+      loginError.value =
+        '無効なユーザー名またはパスワード'
     }
   } catch (error: unknown) {
-    console.error('登录失败:', error)
-    loginError.value = resolveBizErrorMessage(error)
+    console.error(
+      'ログイン失敗:',
+      error,
+    )
+
+    loginError.value =
+      resolveBizErrorMessage(error)
   }
 }
 </script>
 
 <style scoped>
-/* 背景（单张浅色图 + 渐变） */
+/* 背景 */
 .login-container {
   height: 100vh;
   display: flex;
@@ -120,7 +209,7 @@ const handleLogin = async () => {
   background-position: center;
 }
 
-/* 登录卡片（企业风） */
+/* ログインカード */
 .login-card {
   width: 400px;
   padding: 30px;
@@ -130,29 +219,32 @@ const handleLogin = async () => {
   backdrop-filter: blur(6px);
 
   border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 
-  transition: transform 0.2s ease;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.08);
+
+  transition:
+    transform 0.2s ease;
 }
 
-/* 轻微 hover（高级感） */
+/* Hover */
 .login-card:hover {
   transform: translateY(-2px);
 }
 
-/* 标题 */
+/* タイトル */
 .title {
   text-align: center;
   margin-bottom: 20px;
   color: #333;
 }
 
-/* 按钮 */
+/* ログインボタン */
 .login-btn {
   width: 100%;
 }
 
-/* footer */
+/* Footer */
 .footer {
   text-align: right;
   margin-top: 10px;
@@ -163,7 +255,7 @@ const handleLogin = async () => {
   text-decoration: none;
 }
 
-/* 输入框 */
+/* Input */
 :deep(.el-input__wrapper) {
   background: #fff;
   border: 1px solid #ddd;
@@ -178,18 +270,18 @@ const handleLogin = async () => {
   color: #999;
 }
 
-/* focus */
+/* Focus */
 :deep(.el-input__wrapper.is-focus) {
   border-color: #409eff;
 }
 
-/* 按钮 */
+/* Button */
 :deep(.el-button--primary) {
   background: #409eff;
   border: none;
 }
 
-/* 表单项间距 */
+/* Form */
 :deep(.el-form-item) {
   margin-bottom: 28px;
 }
@@ -199,14 +291,12 @@ const handleLogin = async () => {
   line-height: 18px;
 }
 
-/* 错误提示 */
+/* エラーメッセージ */
 .error-message {
   margin-top: 12px;
   color: #f56c6c;
   font-size: 14px;
   text-align: left;
-
-
   line-height: 1.4;
 }
 </style>
